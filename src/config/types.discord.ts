@@ -35,6 +35,8 @@ export type DiscordGuildChannelConfig = {
   enabled?: boolean;
   /** Optional allowlist for channel senders (ids or names). */
   users?: Array<string | number>;
+  /** Optional allowlist for channel roles (ids or names). */
+  roles?: Array<string | number>;
   /** Optional system prompt snippet for this channel. */
   systemPrompt?: string;
 };
@@ -50,6 +52,7 @@ export type DiscordGuildEntry = {
   /** Reaction notification mode (off|own|all|allowlist). Default: own. */
   reactionNotifications?: DiscordReactionNotificationMode;
   users?: Array<string | number>;
+  roles?: Array<string | number>;
   channels?: Record<string, DiscordGuildChannelConfig>;
 };
 
