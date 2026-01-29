@@ -21,12 +21,15 @@ export type DiscordMessagePreflightContext = {
   runtime: RuntimeEnv;
   botUserId?: string;
   guildHistories: Map<string, HistoryEntry[]>;
+  chimeInCounters: Map<string, number>;
   historyLimit: number;
   mediaMaxBytes: number;
   textLimit: number;
   replyToMode: ReplyToMode;
   ackReactionScope: "all" | "direct" | "group-all" | "group-mentions";
   groupPolicy: "open" | "disabled" | "allowlist";
+
+  chimeInConfig?: import("../../config/types.discord.js").ChimeInConfig | null;
 
   data: DiscordMessageEvent;
   client: Client;
@@ -84,6 +87,7 @@ export type DiscordMessagePreflightParams = {
   runtime: RuntimeEnv;
   botUserId?: string;
   guildHistories: Map<string, HistoryEntry[]>;
+  chimeInCounters: Map<string, number>;
   historyLimit: number;
   mediaMaxBytes: number;
   textLimit: number;
