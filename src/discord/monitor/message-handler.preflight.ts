@@ -171,11 +171,13 @@ export async function preflightDiscordMessage(
     accountId: params.accountId,
     direction: "inbound",
   });
+  const memberRoleIds = params.data.member?.roles?.map((r: { id: string }) => r.id) ?? [];
   const route = resolveAgentRoute({
     cfg: params.cfg,
     channel: "discord",
     accountId: params.accountId,
     guildId: params.data.guild_id ?? undefined,
+    memberRoleIds,
     peer: {
       kind: isDirectMessage ? "dm" : isGroupDm ? "group" : "channel",
       id: isDirectMessage ? author.id : message.channelId,
