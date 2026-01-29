@@ -35,6 +35,7 @@ import {
   resolveDiscordGuildEntry,
   resolveDiscordShouldRequireMention,
   resolveDiscordUserAllowed,
+  resolveDiscordRoleAllowed,
   resolveGroupDmAllow,
 } from "./allow-list.js";
 import {
@@ -450,15 +451,29 @@ export async function preflightDiscordMessage(
 
   if (isGuildMessage) {
     const channelUsers = channelConfig?.users ?? guildInfo?.users;
-    if (Array.isArray(channelUsers) && channelUsers.length > 0) {
-      const userOk = resolveDiscordUserAllowed({
-        allowList: channelUsers,
-        userId: author.id,
-        userName: author.username,
-        userTag: formatDiscordUserTag(author),
-      });
-      if (!userOk) {
-        logVerbose(`Blocked discord guild sender ${author.id} (not in channel users allowlist)`);
+    const channelRoles = channelConfig?.roles ?? guildInfo?.roles;
+    const hasUserRestriction = Array.isArray(channelUsers) && channelUsers.length > 0;
+    const hasRoleRestriction = Array.isArray(channelRoles) && channelRoles.length > 0;
+
+    if (hasUserRestriction || hasRoleRestriction) {
+      const memberRoleIds = params.data.member?.roles?.map((r: { id: string }) => r.id) ?? [];
+      const userOk = hasUserRestriction
+        ? resolveDiscordUserAllowed({
+            allowList: channelUsers,
+            userId: author.id,
+            userName: author.username,
+            userTag: formatDiscordUserTag(author),
+          })
+        : false;
+      const roleOk = hasRoleRestriction
+        ? resolveDiscordRoleAllowed({
+            allowList: channelRoles,
+            memberRoleIds,
+          })
+        : false;
+
+      if (!userOk && !roleOk) {
+        logVerbose(`Blocked discord guild sender ${author.id} (not in users/roles allowlist)`);
         return null;
       }
     }
