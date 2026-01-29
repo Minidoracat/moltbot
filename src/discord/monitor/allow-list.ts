@@ -35,8 +35,10 @@ export type DiscordGuildEntryResolved = {
       roles?: Array<string | number>;
       systemPrompt?: string;
       autoThread?: boolean;
+      chimeIn?: import("../../config/types.discord.js").ChimeInConfig;
     }
   >;
+  chimeIn?: import("../../config/types.discord.js").ChimeInConfig;
 };
 
 export type DiscordChannelConfigResolved = {
@@ -48,6 +50,7 @@ export type DiscordChannelConfigResolved = {
   roles?: Array<string | number>;
   systemPrompt?: string;
   autoThread?: boolean;
+  chimeIn?: import("../../config/types.discord.js").ChimeInConfig;
   matchKey?: string;
   matchSource?: ChannelMatchSource;
 };
@@ -257,6 +260,7 @@ function resolveDiscordChannelConfigEntry(
     roles: entry.roles,
     systemPrompt: entry.systemPrompt,
     autoThread: entry.autoThread,
+    chimeIn: entry.chimeIn,
   };
   return resolved;
 }
@@ -344,6 +348,15 @@ export function resolveDiscordShouldRequireMention(params: {
     return false;
   }
   return params.channelConfig?.requireMention ?? params.guildInfo?.requireMention ?? true;
+}
+
+export function resolveDiscordChimeIn(params: {
+  isGuildMessage: boolean;
+  channelConfig?: DiscordChannelConfigResolved | null;
+  guildInfo?: DiscordGuildEntryResolved | null;
+}): import("../../config/types.discord.js").ChimeInConfig | null {
+  if (!params.isGuildMessage) return null;
+  return params.channelConfig?.chimeIn ?? params.guildInfo?.chimeIn ?? null;
 }
 
 export function isDiscordAutoThreadOwnedByBot(params: {
