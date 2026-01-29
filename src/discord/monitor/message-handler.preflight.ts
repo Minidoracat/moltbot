@@ -438,6 +438,37 @@ export async function preflightDiscordMessage(
     commandAuthorized,
   });
   const effectiveWasMentioned = mentionGate.effectiveWasMentioned;
+
+  if (isGuildMessage) {
+    const channelUsers = channelConfig?.users ?? guildInfo?.users;
+    const channelRoles = channelConfig?.roles ?? guildInfo?.roles;
+    const hasUserRestriction = Array.isArray(channelUsers) && channelUsers.length > 0;
+    const hasRoleRestriction = Array.isArray(channelRoles) && channelRoles.length > 0;
+
+    if (hasUserRestriction || hasRoleRestriction) {
+      const memberRoleIds = params.data.member?.roles?.map((r: { id: string }) => r.id) ?? [];
+      const userOk = hasUserRestriction
+        ? resolveDiscordUserAllowed({
+            allowList: channelUsers,
+            userId: author.id,
+            userName: author.username,
+            userTag: formatDiscordUserTag(author),
+          })
+        : false;
+      const roleOk = hasRoleRestriction
+        ? resolveDiscordRoleAllowed({
+            allowList: channelRoles,
+            memberRoleIds,
+          })
+        : false;
+
+      if (!userOk && !roleOk) {
+        logVerbose(`Blocked discord guild sender ${author.id} (not in users/roles allowlist)`);
+        return null;
+      }
+    }
+  }
+
   if (isGuildMessage && shouldRequireMention) {
     if (botId && mentionGate.shouldSkip) {
       // ChimeIn frequency gating: accumulate messages, don't drop immediately
@@ -503,36 +534,6 @@ export async function preflightDiscordMessage(
   // Reset chimeIn counter when bot is mentioned
   if (isGuildMessage && chimeInConfig && !mentionGate.shouldSkip) {
     params.chimeInCounters.set(message.channelId, 0);
-  }
-
-  if (isGuildMessage) {
-    const channelUsers = channelConfig?.users ?? guildInfo?.users;
-    const channelRoles = channelConfig?.roles ?? guildInfo?.roles;
-    const hasUserRestriction = Array.isArray(channelUsers) && channelUsers.length > 0;
-    const hasRoleRestriction = Array.isArray(channelRoles) && channelRoles.length > 0;
-
-    if (hasUserRestriction || hasRoleRestriction) {
-      const memberRoleIds = params.data.member?.roles?.map((r: { id: string }) => r.id) ?? [];
-      const userOk = hasUserRestriction
-        ? resolveDiscordUserAllowed({
-            allowList: channelUsers,
-            userId: author.id,
-            userName: author.username,
-            userTag: formatDiscordUserTag(author),
-          })
-        : false;
-      const roleOk = hasRoleRestriction
-        ? resolveDiscordRoleAllowed({
-            allowList: channelRoles,
-            memberRoleIds,
-          })
-        : false;
-
-      if (!userOk && !roleOk) {
-        logVerbose(`Blocked discord guild sender ${author.id} (not in users/roles allowlist)`);
-        return null;
-      }
-    }
   }
 
   const systemLocation = resolveDiscordSystemLocation({
