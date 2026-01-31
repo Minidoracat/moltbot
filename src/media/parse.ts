@@ -28,6 +28,12 @@ function isValidMedia(candidate: string, opts?: { allowSpaces?: boolean }) {
     return true;
   }
 
+  // Absolute paths: accept gateway-generated files (e.g. /tmp/tts-xxx/voice.mp3).
+  // MEDIA tokens originate from agent/tool output (trusted); traversal still blocked.
+  if (candidate.startsWith("/")) {
+    return !candidate.includes("..");
+  }
+
   // Local paths: only allow safe relative paths starting with ./ that do not traverse upwards.
   return candidate.startsWith("./") && !candidate.includes("..");
 }

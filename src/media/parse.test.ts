@@ -9,16 +9,40 @@ describe("splitMediaFromOutput", () => {
     expect(result.text).toBe("Hello world");
   });
 
-  it("rejects absolute media paths to prevent LFI", () => {
+  it("accepts absolute media paths with spaces via fallback", () => {
     const result = splitMediaFromOutput("MEDIA:/Users/pete/My File.png");
-    expect(result.mediaUrls).toBeUndefined();
-    expect(result.text).toBe("MEDIA:/Users/pete/My File.png");
+    expect(result.mediaUrls).toEqual(["/Users/pete/My File.png"]);
+    expect(result.text).toBe("");
   });
 
-  it("rejects quoted absolute media paths to prevent LFI", () => {
+  it("accepts quoted absolute media paths with spaces", () => {
     const result = splitMediaFromOutput('MEDIA:"/Users/pete/My File.png"');
+    expect(result.mediaUrls).toEqual(["/Users/pete/My File.png"]);
+    expect(result.text).toBe("");
+  });
+
+  it("accepts absolute media paths without spaces", () => {
+    const result = splitMediaFromOutput("MEDIA:/tmp/tts-xxx/voice.mp3");
+    expect(result.mediaUrls).toEqual(["/tmp/tts-xxx/voice.mp3"]);
+    expect(result.text).toBe("");
+  });
+
+  it("rejects absolute paths with directory traversal", () => {
+    const result = splitMediaFromOutput("MEDIA:/tmp/../etc/passwd");
     expect(result.mediaUrls).toBeUndefined();
-    expect(result.text).toBe('MEDIA:"/Users/pete/My File.png"');
+    expect(result.text).toBe("MEDIA:/tmp/../etc/passwd");
+  });
+
+  it("accepts file:// URI absolute paths", () => {
+    const result = splitMediaFromOutput("MEDIA:file:///tmp/voice.mp3");
+    expect(result.mediaUrls).toEqual(["/tmp/voice.mp3"]);
+    expect(result.text).toBe("");
+  });
+
+  it("rejects file:// URI with traversal", () => {
+    const result = splitMediaFromOutput("MEDIA:file:///tmp/../etc/passwd");
+    expect(result.mediaUrls).toBeUndefined();
+    expect(result.text).toBe("MEDIA:file:///tmp/../etc/passwd");
   });
 
   it("rejects tilde media paths to prevent LFI", () => {
