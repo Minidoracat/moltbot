@@ -5,9 +5,9 @@ import { discoverAuthStorage, discoverModels } from "@mariozechner/pi-coding-age
 import { resolveAgentDir, resolveAgentModelPrimary } from "../../agents/agent-scope.js";
 import { getApiKeyForModel, requireApiKey } from "../../agents/model-auth.js";
 import { normalizeProviderId } from "../../agents/model-selection.js";
-import { ensureMoltbotModelsJson } from "../../agents/models-config.js";
+import { ensureOpenClawModelsJson } from "../../agents/models-config.js";
 import { extractAssistantText } from "../../agents/pi-embedded-utils.js";
-import type { MoltbotConfig } from "../../config/config.js";
+import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import type { ChimeInConfig } from "../../config/types.discord.js";
 import type { HistoryEntry } from "../../auto-reply/reply/history.js";
 import { logVerbose } from "../../globals.js";
@@ -18,7 +18,7 @@ const DEFAULT_CHIME_IN_PROMPT =
 export async function evaluateChimeIn(params: {
   history: HistoryEntry[];
   chimeInConfig: ChimeInConfig;
-  cfg: MoltbotConfig;
+  cfg: OpenClawConfig;
   agentId: string;
   channelId: string;
 }): Promise<boolean> {
@@ -51,7 +51,7 @@ export async function evaluateChimeIn(params: {
     }
 
     const agentDir = resolveAgentDir(cfg, agentId);
-    await ensureMoltbotModelsJson(cfg, agentDir);
+    await ensureOpenClawModelsJson(cfg, agentDir);
     const authStorage = discoverAuthStorage(agentDir);
     const modelRegistry = discoverModels(authStorage, agentDir);
     const model = modelRegistry.find(provider, modelId) as Model<Api> | null;
