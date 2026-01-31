@@ -10,7 +10,7 @@ vi.mock("@mariozechner/pi-ai", () => ({
   complete: mockComplete,
 }));
 
-vi.mock("@mariozechner/pi-coding-agent", () => ({
+vi.mock("../../agents/pi-model-discovery.js", () => ({
   discoverAuthStorage: vi.fn(() => ({
     setRuntimeApiKey: mockSetRuntimeApiKey,
   })),
